@@ -69,7 +69,7 @@ router.get('/profile', passport.authenticate('jwt', { session: false }), (req, r
 // Remove User
 router.delete('/profile', passport.authenticate('jwt', { session: false }), (req, res, next) => {
     User.remove({ _id: req.user._id }, (err) => {
-    res.json({ result: err ? 'error' : 'ok' });
+        res.json({ result: err ? 'error' : 'ok' });
     });
 });
 
@@ -80,27 +80,27 @@ router.post('/update', passport.authenticate('jwt', { session: false }), (req, r
     if (req.body.username) var newUsername = req.body.username;
     if (req.body.email) var newEmail = req.body.email;
     if (req.body.password) var newPassword = req.body.password;
-  
+
     User.getUserById({ _id: req.user._id }, (err, user) => {
         if (err) throw err;
         if (!user) {
             return res.json({ success: false, msg: 'User not found' });
         } else {
-           
+
             user.name = newName;
             user.username = newUsername;
             user.email = newEmail;
 
             if (newPassword === '' || newPassword === undefined) {
-                
-                  User.addUser(user, (err, user) => {
+
+                User.addUser(user, (err, user) => {
                     if (err) {
                         res.json({ success: false, msg: 'Failed to update User', errmsg: err.errmsg });
                     } else {
                         res.json({ success: true, msg: 'User successfully updated!' });
                     }
                 });
-                
+
             } else {
                 user.password = newPassword;
 
