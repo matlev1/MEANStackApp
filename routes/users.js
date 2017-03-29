@@ -16,13 +16,9 @@ router.post('/register', (req, res, next) => {
     });
 
     User.addUser(newUser, (err, user) => {
-        if (err) {
-            
-            console.log(err);
-            console.log(newUser.username);
-            //console.log(existingUsers);
 
-            res.json({ success: false, msg: 'Failed to register User' });
+        if (err) {
+            res.json({ success: false, msg: 'Failed to register User', errmsg: err.errmsg });
         } else {
             res.json({ success: true, msg: 'User successfully registered!' });
         }
@@ -31,6 +27,7 @@ router.post('/register', (req, res, next) => {
 
 // Authenticate
 router.post('/authenticate', (req, res, next) => {
+
     const username = req.body.username;
     const password = req.body.password;
 
@@ -71,9 +68,8 @@ router.get('/profile', passport.authenticate('jwt', { session: false }), (req, r
 
 // Remove User
 router.delete('/profile', passport.authenticate('jwt', { session: false }), (req, res, next) => {
-    //res.json({user: req.params.id});
     User.remove({ _id: req.user._id }, (err) => {
-        res.json({ result: err ? 'error' : 'ok' });
+    res.json({ result: err ? 'error' : 'ok' });
     });
 });
 
@@ -84,49 +80,39 @@ router.post('/update', passport.authenticate('jwt', { session: false }), (req, r
     if (req.body.username) var newUsername = req.body.username;
     if (req.body.email) var newEmail = req.body.email;
     if (req.body.password) var newPassword = req.body.password;
-    console.log(newPassword);
-    //res.json({new: req.body});
-    console.log(newName);
-    //User.update(user)
+  
     User.getUserById({ _id: req.user._id }, (err, user) => {
         if (err) throw err;
         if (!user) {
             return res.json({ success: false, msg: 'User not found' });
         } else {
-
-
-
-            console.log(user.password);
+           
             user.name = newName;
             user.username = newUsername;
             user.email = newEmail;
 
             if (newPassword === '' || newPassword === undefined) {
-                console.log('I am undefined or an empty string: ' + req.user.password);
-                if (err) {
-                        res.json({ success: false, msg: 'Failed to update User' });
+                
+                  User.addUser(user, (err, user) => {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to update User', errmsg: err.errmsg });
                     } else {
                         res.json({ success: true, msg: 'User successfully updated!' });
                     }
+                });
                 
             } else {
                 user.password = newPassword;
-                
-                console.log(user);
 
                 User.addUser(user, (err, user) => {
                     if (err) {
-                        res.json({ success: false, msg: 'Failed to update User' });
+                        res.json({ success: false, msg: 'Failed to update User', errmsg: err.errmsg });
                     } else {
                         res.json({ success: true, msg: 'User successfully updated!' });
                     }
                 });
             }
             user.save();
-
-            console.log(user.password);
-
-
         }
     });
 
